@@ -79,23 +79,28 @@ async function delay(ms) {
 // This async function controls the flow of the race, add the logic and error handling
 async function handleCreateRace() {
 	// render starting UI
-	renderAt('#race', renderRaceStartView(store.raceTracks[store.track_id-1]));
+	try {
+		renderAt('#race', renderRaceStartView(store.raceTracks[store.track_id-1]));
 
-	let playerId = store.player_id;
-	let trackId = store.track_id;
+		const playerId = store.player_id;
+		const trackId = store.track_id;
+	
+		const race = await createRace(playerId, trackId);
+		store.race_id = parseInt(race.ID)-1;
+	
+		await runCountdown();
+		await startRace(store.race_id);
+		runRace(store.race_id);
+	} catch (error) {
+		console.log(error);
+	}
 
-	const race = await createRace(playerId, trackId);
-	store.race_id = parseInt(race.ID)-1;
-
-	await runCountdown();
-	await startRace(store.race_id);
-	runRace(store.race_id);
 }
 
 async function runRace(raceID) {
 	return new Promise(resolve => {
 
-		let raceInterval = setInterval(async () => {
+		const raceInterval = setInterval(async () => {
 			const res = await getRace(store.race_id);
 			console.log('Res:');
 			console.log(res);
